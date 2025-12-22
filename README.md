@@ -1,12 +1,6 @@
 # llm7r
 
-[![R](https://img.shields.io/badge/R-%E2%89%A5%203.6-blue.svg)](https://www.r-project.org/)
-[![LLM7.IO](https://img.shields.io/badge/LLM7.IO-API-orange.svg)](https://llm7.io)
-[![MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-R client for LLM7.io API.
-
-> ***Use powerful LLMs in your R workflows and data analysis.***
+R client for LLM7.io API. ***Use powerful LLMs in your R workflows and data analysis.***
 
 ## Install
 
@@ -45,25 +39,6 @@ client$analyze_plot("plot.png", "Describe this relationship")
 
 See `examples/` folder for more usage scenarios.
 
-## API
-
-```r
-# Text
-client$simple_completion(prompt)
-client$chat_completion(messages)
-
-# Data
-client$analyze_dataframe(df, question)
-
-# Vision
-client$analyze_plot(image_path, question)
-client$analyze_multiple_plots(images, question)
-
-# Config
-set_config("models.text", "gpt-4o")
-print_config()
-```
-
 ## Auth
 
 Default: `api_key = "unused"` (limited)  
@@ -74,9 +49,10 @@ client <- create_llm7_client(api_key = "your-token")
 ```
 ---
 
-> Thanks to [Chigwell](https://github.com/chigwell) for creating such a great API!
+Thanks to [Chigwell](https://github.com/chigwell) for creating such a great API!
 
 ---
 
 This wrapper was created by **Eduardo J. Barrios** - [edujbarrios.com](https://edujbarrios.com)
+
 
