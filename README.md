@@ -1,4 +1,4 @@
-# llm7r
+# llm7R
 
 R client for LLM7.io API. ***Use powerful LLMs in your R workflows and data analysis.***
 
@@ -54,5 +54,6 @@ Thanks to [Chigwell](https://github.com/chigwell) for creating such a great API!
 ---
 
 This wrapper was created by **Eduardo J. Barrios** - [edujbarrios.com](https://edujbarrios.com)
+
 
 
