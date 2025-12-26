@@ -14,8 +14,8 @@
 # Install devtools if not already installed
 install.packages("devtools")
 
-# Install llm7r
-devtools::install_github("edujbarrios/llm7r")
+# Install llm7R
+devtools::install_github("edujbarrios/llm7R")
 ```
 
 ### Cloning it
@@ -100,3 +100,4 @@ Special thanks to **Chigwell** for creating and maintaining the LLM7.io API.
 
 Eduardo J. Barrios  
 https://edujbarrios.com
+
