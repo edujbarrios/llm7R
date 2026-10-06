@@ -1,67 +1,65 @@
 # LLM7.IO Configuration File
 # ===========================
-# This file contains all configuration settings for the LLM7.IO wrapper
+# Configuration defaults aligned with the current LLM7.io API.
 
-# API Configuration
 LLM7_CONFIG <- list(
-  # Base URL for the API
+  # OpenAI-compatible API base URL.
   base_url = "https://api.llm7.io/v1",
-  
-  # Default API key (can be overridden when creating client)
-  api_key = "unused",
-  
-  # Default models for different tasks
+
+  # Prefer LLM7_API_KEY. LLM7_API_TOKEN is kept as a compatibility alias.
+  api_key = Sys.getenv(
+    "LLM7_API_KEY",
+    unset = Sys.getenv("LLM7_API_TOKEN", unset = "")
+  ),
+
+  # LLM7 recommends selectors for chat workloads because concrete model IDs
+  # can change with upstream availability.
   models = list(
-    text = "gpt-4",           # Default text model
-    vision = "gpt-4o",        # Default vision model
-    fast = "fast",            # Fast model
-    pro = "pro"               # Pro model
+    text = "default",
+    vision = "default",
+    fast = "fast",
+    pro = "pro"
   ),
-  
-  # Default generation parameters
+
   generation = list(
-    temperature = 0.7,        # Default temperature (0-2)
-    max_tokens = NULL,        # Default max tokens (NULL = no limit)
-    stream = FALSE            # Default streaming setting
+    temperature = 0.7,
+    max_tokens = NULL,
+    stream = FALSE
   ),
-  
-  # Data analysis settings
+
   data_analysis = list(
-    include_summary = TRUE,   # Include statistical summary
-    max_rows = 10,           # Max rows to include in context
-    max_columns = 20         # Max columns to include
+    include_summary = TRUE,
+    max_rows = 10,
+    max_columns = 20
   ),
-  
-  # Vision/Image analysis settings
+
   vision = list(
-    detail = "auto",          # Image detail level: "auto", "low", "high"
+    detail = NULL,
     supported_formats = c("png", "jpg", "jpeg", "gif", "webp")
   ),
-  
-  # Request settings
+
   request = list(
-    timeout = 60,             # Request timeout in seconds
-    retry_attempts = 3,       # Number of retry attempts on failure
-    retry_delay = 1           # Delay between retries (seconds)
+    timeout = 60,
+    retry_attempts = 3,
+    retry_delay = 1
   ),
-  
-  # Logging and debugging
+
   debug = list(
-    verbose = FALSE,          # Print detailed request/response info
-    log_requests = FALSE,     # Log all API requests
-    log_file = NULL          # Log file path (NULL = no file logging)
+    verbose = FALSE,
+    log_requests = FALSE,
+    log_file = NULL
   )
 )
 
 #' Get configuration value
-#' 
-#' @param key Configuration key (e.g., "base_url", "models.text")
-#' @param default Default value if key not found
+#'
+#' @param key Configuration key (for example, "base_url" or "models.text")
+#' @param default Default value if the key is not found
 #' @return Configuration value
 get_config <- function(key, default = NULL) {
   keys <- strsplit(key, "\\.")[[1]]
   value <- LLM7_CONFIG
-  
+
   for (k in keys) {
     if (is.list(value) && k %in% names(value)) {
       value <- value[[k]]
@@ -69,56 +67,58 @@ get_config <- function(key, default = NULL) {
       return(default)
     }
   }
-  
-  return(value)
+
+  value
 }
 
 #' Set configuration value
-#' 
+#'
 #' @param key Configuration key
 #' @param value New value
+#' @return The assigned value, invisibly
 set_config <- function(key, value) {
   keys <- strsplit(key, "\\.")[[1]]
-  
-  if (length(keys) == 1) {
-    LLM7_CONFIG[[keys[1]]] <<- value
-  } else {
-    # Navigate to parent and set value
-    parent <- LLM7_CONFIG
-    for (i in 1:(length(keys) - 1)) {
-      if (!is.list(parent[[keys[i]]])) {
-        parent[[keys[i]]] <- list()
-      }
-      parent <- parent[[keys[i]]]
+
+  set_nested <- function(x, remaining, new_value) {
+    current <- remaining[[1]]
+
+    if (length(remaining) == 1) {
+      x[[current]] <- new_value
+      return(x)
     }
-    parent[[keys[length(keys)]]] <- value
-    
-    # Update in global config
-    temp <- LLM7_CONFIG
-    current <- temp
-    for (i in 1:(length(keys) - 1)) {
-      current <- current[[keys[i]]]
+
+    if (is.null(x[[current]]) || !is.list(x[[current]])) {
+      x[[current]] <- list()
     }
-    current[[keys[length(keys)]]] <- value
-    LLM7_CONFIG <<- temp
+
+    x[[current]] <- set_nested(x[[current]], remaining[-1], new_value)
+    x
   }
+
+  LLM7_CONFIG <<- set_nested(LLM7_CONFIG, keys, value)
+  invisible(value)
 }
 
 #' Load configuration from file
-#' 
-#' @param file Path to configuration file
+#'
+#' @param file Path to a configuration file defining LLM7_CONFIG
 load_config <- function(file) {
-  if (file.exists(file)) {
-    source(file)
-    message("Configuration loaded from: ", file)
-  } else {
-    warning("Configuration file not found: ", file)
+  if (!file.exists(file)) {
+    stop("Configuration file not found: ", file)
   }
+
+  sys.source(file, envir = .GlobalEnv)
+  invisible(LLM7_CONFIG)
 }
 
 #' Print current configuration
 print_config <- function() {
   cat("LLM7.IO Configuration\n")
   cat("=====================\n\n")
-  str(LLM7_CONFIG, max.level = 2)
+
+  safe_config <- LLM7_CONFIG
+  if (!is.null(safe_config$api_key) && nzchar(safe_config$api_key)) {
+    safe_config$api_key <- "<configured>"
+  }
+  str(safe_config, max.level = 2)
 }
